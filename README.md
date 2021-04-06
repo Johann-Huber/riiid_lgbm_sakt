@@ -33,7 +33,7 @@ My training & submission **notebook** and **write-up** for the Kaggle competitio
 FIGURE
 
 
-Overview : LGBM + [SAKT](https://arxiv.org/abs/1907.06837) ensemble that heavily rely on feature engineering. 
+My final model is a LGBM + [SAKT](https://arxiv.org/abs/1907.06837) ensemble that heavily rely on feature engineering. 
 
 Most of my choices were conditionned by the limited computational resources I had (16GB CPU RAM).
 Pandas data manipulation functions applied on such a large dataset almost always lead to a RAM overflow (under the Kaggle environement limitations). I decided to rely on loops + numpy functions for feature engineering :
@@ -53,15 +53,16 @@ My final submission had a slightly better LB score in the private dataset than i
 ### Setup
 As I couldn’t rely on a good local setup, I decided to work on the Kaggle environment.
 
-**PROS:** No additional time required to make the inference pipeline work under Kaggle env, which was required for submitting.
+PROS: No additional time required to make the inference pipeline work under Kaggle env, which was required for submitting.
 In this competition, inference must be done into the Kaggle environment to do submissions through an API which sequentially gives batches of test data. Many competitors who worked locally were not able to properly establish their inference pipeline in the Kaggle environement (bugs, RAM limited, heavy offline preprocessed data to upload).
 
-**CONS:** Limited RAM from training (16gb cpu or 13gb cpu + 16gb gpu)
+CONS: Limited RAM from training (16gb cpu or 13gb cpu + 16gb gpu)
 
 
 ### Feature Engineering :
 
 My final LGB model relies on 53 features, selected through the following workflow :
+
 New set of features → evaluation → Feature importance (SHAP) → Discard less important features → ...
 
 Question-based : 
@@ -108,6 +109,8 @@ I added L1 & L2 regularization to limit overfitting. I set subsampling to 50% of
 
 ### SAKT (transformer-based) model
 
+SAKT original paper : [link](https://arxiv.org/abs/1907.06837)
+
 This part of my solution relied on a [code shared on Kaggle](https://www.kaggle.com/wangsg/a-self-attentive-model-for-knowledge-tracing) during the competition, making some improvements : 
 
 - Train/Valid user interaction sequences split with respect to timestamp, making sure to simulate private-LB data conditions : validation sequences follow training ones, some users are in both training/valid datasets, and new users are regularly added to the test data. 
@@ -128,7 +131,9 @@ My LGBM alone got 0.789 LB, complementarity with the DL model made a significant
 
 ### Key to get higher in the LB
 
-Most of the **winning solutions** are purely **transformer-based**. The large dataset, as well as the time-based inference API made those model outperform LGB ones on this task.
+Most of the winning solutions are purely transformer-based. 
+
+The large dataset, as well as the time-based inference API made those model outperform LGB ones on this task.
 Some winning solutions from similar Kaggle competitions were somehow misleading ; many of them heavily relied on LGBM and massive Feature engineering to reach the top of the leaderboard. But those competitions were a little biased compared to Riiid, in a sense that there were no such thing as time-based inference API that prevent competitors to use some forms of time leakages (input features for later interaction that could help to predict target for earlier interactions). In such a setup, decision-trees based models were very efficient, and were over represented at the top of leaderboards.
 
 Some competitors have reported a single-LGB model with 0.801 private-LB. Those solutions relied on a full history for each user, which is heavy RAM consuming for both training & inference. SQLite approaches allowed them to fit those constraints; it would be a great solution to consider in the future when dealing with large dataset in a computationally limited environment.
